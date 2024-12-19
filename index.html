@@ -29,10 +29,9 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            background: linear-gradient(to bottom, rgba(255, 245, 235, 1), rgba(255, 215, 160, 1)); /* Warmer white */
+            background: #f5f5f5;
             color: #333;
             position: relative;
-            transition: background 0.5s ease-in-out;
         }
 
         h1 {
@@ -61,13 +60,6 @@
             font-size: 1.5rem;
         }
 
-        .overlay p {
-            margin-bottom: 20px;
-            font-size: 1rem;
-            text-align: center;
-            max-width: 400px;
-        }
-
         .overlay button {
             background: #007BFF;
             color: #fff;
@@ -80,6 +72,75 @@
 
         .overlay button:hover {
             background: #0056b3;
+        }
+
+        .upload-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+            width: 100%;
+        }
+
+        label {
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        input[type="number"], input[type="color"], input[type="range"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        input[type="color"] {
+            height: 40px;
+            background: none;
+            cursor: pointer;
+        }
+
+        input[type="range"] {
+            width: 100%;
+        }
+
+        .preview-container {
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+            margin-top: 20px;
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        img, canvas {
+            max-width: 45%;
+            max-height: 400px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+        }
+
+        #preview {
+            cursor: crosshair;
         }
 
         .settings-icon {
@@ -124,20 +185,14 @@
             background: #0056b3;
         }
 
-        .invert-toggle {
-            margin-top: 15px;
+        #undoButton {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .buttons {
             display: flex;
-            align-items: center;
             gap: 10px;
-        }
-
-        #backgroundWarmthSlider,
-        #backgroundDarknessSlider {
-            width: 100%;
-        }
-
-        #invertColorsCheckbox {
-            cursor: pointer;
         }
 
     </style>
@@ -146,241 +201,160 @@
 
     <button class="settings-icon" onclick="toggleSettings()">⚙️</button>
     <div class="settings-panel" id="settingsPanel">
-        <label for="backgroundWarmthSlider">Background Warmth</label>
-        <input type="range" id="backgroundWarmthSlider" min="0" max="1" step="0.01" value="0.3">
-        <br>
-        <label for="backgroundDarknessSlider">Background Darkness</label>
-        <input type="range" id="backgroundDarknessSlider" min="0" max="1" step="0.01" value="0.2">
-        <br>
-        <div class="invert-toggle">
-            <label for="invertColorsCheckbox">Invert Colors</label>
-            <input type="checkbox" id="invertColorsCheckbox">
+        <label for="backgroundSlider">Background Color</label>
+        <input type="range" id="backgroundSlider" min="0" max="1" step="0.01" value="0">
+    </div>
+
+    <div class="overlay" id="instructionOverlay">
+        <h2>Welcome to the Car Wheel Color Preview Tool</h2>
+        <button onclick="goToStep(1)">Start</button>
+    </div>
+
+    <div class="upload-container" id="step1">
+        <h2>Step 1: Upload a side profile picture of a car</h2>
+        <input type="file" id="imageInput" accept="image/*">
+        <button id="step1NextButton" style="display: none;" onclick="goToStep(2)">Next Step</button>
+    </div>
+
+    <div class="upload-container" id="step2" style="display: none;">
+        <h2>Step 2: Select the center of each wheel in the image</h2>
+        <div class="preview-container">
+            <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
+                <img id="preview" alt="Original Image">
+                <button id="undoButton">Undo Last Click</button>
+            </div>
+            <canvas id="modifiedPreview"></canvas>
+        </div>
+        <button onclick="goToStep(3)">Next Step</button>
+    </div>
+
+    <div class="upload-container" id="step3" style="display: none;">
+        <h2>Step 3: Customize Wheel Appearance</h2>
+        <div class="preview-container">
+            <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
+                <img id="previewStep3" alt="Original Image">
+                <canvas id="modifiedPreviewStep3"></canvas>
+            </div>
+        </div>
+        <div class="input-group">
+            <label for="circleSize">Circle Size (radius):</label>
+            <input type="number" id="circleSize" value="30" min="1">
+        </div>
+
+        <div class="input-group">
+            <label for="circleColor">Circle Color:</label>
+            <input type="color" id="circleColorPicker" value="#000000">
+        </div>
+
+        <div class="input-group">
+            <label for="circleOpacity">Circle Opacity:</label>
+            <input type="range" id="circleOpacity" min="0" max="1" step="0.01" value="1">
         </div>
     </div>
+
     <script>
-        const body = document.body;
+        const backgroundSlider = document.getElementById('backgroundSlider');
         const settingsPanel = document.getElementById('settingsPanel');
-        const backgroundWarmthSlider = document.getElementById('backgroundWarmthSlider');
-        const backgroundDarknessSlider = document.getElementById('backgroundDarknessSlider');
-        const invertColorsCheckbox = document.getElementById('invertColorsCheckbox');
+        const instructionOverlay = document.getElementById('instructionOverlay');
+        const steps = [
+            document.getElementById('step1'),
+            document.getElementById('step2'),
+            document.getElementById('step3')
+        ];
+        const step1NextButton = document.getElementById('step1NextButton');
+        const imageInput = document.getElementById('imageInput');
+        const preview = document.getElementById('preview');
+        const previewStep3 = document.getElementById('previewStep3');
+        const modifiedPreview = document.getElementById('modifiedPreview');
+        const modifiedPreviewStep3 = document.getElementById('modifiedPreviewStep3');
 
-        let invertColors = false;
+        let currentStep = 0;
+        let img = null;
+        let selectedPoints = [];
 
-        // Toggle settings panel visibility
         function toggleSettings() {
             settingsPanel.style.display = settingsPanel.style.display === 'block' ? 'none' : 'block';
         }
 
-        // Update background warmth based on slider value
-        backgroundWarmthSlider.addEventListener('input', updateBackground);
-        backgroundDarknessSlider.addEventListener('input', updateBackground);
+        backgroundSlider.addEventListener('input', () => {
+            const value = backgroundSlider.value;
+            const gradient = `linear-gradient(to bottom, rgba(245, 245, 245, ${1 - value}), rgba(255, 165, 0, ${value}))`;
+            document.body.style.background = gradient;
+        });
 
-        function updateBackground() {
-            const warmthValue = backgroundWarmthSlider.value;
-            const darknessValue = backgroundDarknessSlider.value;
-            const warmColor = `rgba(255, 245, 235, ${1 - warmthValue})`;
-            const darkColor = `rgba(0, 0, 0, ${darknessValue})`;
-            body.style.background = `linear-gradient(to bottom, ${warmColor}, ${darkColor})`;
+        function goToStep(step) {
+            if (currentStep >= 0) {
+                steps[currentStep].style.display = 'none';
+            }
+            steps[step - 1].style.display = 'flex';
+            currentStep = step - 1;
+            if (step === 3) {
+                previewStep3.src = preview.src;
+                modifiedPreviewStep3.width = modifiedPreview.width;
+                modifiedPreviewStep3.height = modifiedPreview.height;
+                const ctx = modifiedPreviewStep3.getContext('2d');
+                ctx.drawImage(modifiedPreview, 0, 0);
+            }
         }
 
-        // Toggle color inversion
-        invertColorsCheckbox.addEventListener('change', () => {
-            invertColors = invertColorsCheckbox.checked;
-            if (invertColors) {
-                body.style.filter = 'invert(1)';
-                document.body.style.color = 'white';
-                document.querySelectorAll('button').forEach((button) => {
-                    button.style.backgroundColor = 'white';
-                    button.style.color = 'black';
-                });
-            } else {
-                body.style.filter = 'invert(0)';
-                document.body.style.color = 'black';
-                document.querySelectorAll('button').forEach((button) => {
-                    button.style.backgroundColor = '#007BFF';
-                    button.style.color = 'white';
-                });
+        imageInput.addEventListener('change', () => {
+            const file = imageInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    img = new Image();
+                    img.onload = () => {
+                        modifiedPreview.width = img.naturalWidth;
+                        modifiedPreview.height = img.naturalHeight;
+                        const ctx = modifiedPreview.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+                step1NextButton.style.display = 'block';
             }
         });
 
+        preview.addEventListener('click', (e) => {
+            if (!img) return;
+
+            const rect = preview.getBoundingClientRect();
+            const scaleX = img.naturalWidth / rect.width;
+            const scaleY = img.naturalHeight / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+
+            selectedPoints.push({ x, y });
+            drawCircles();
+        });
+
+        function drawCircles() {
+            if (!img) return;
+
+            const radius = parseInt(document.getElementById('circleSize').value) || 30;
+            const color = document.getElementById('circleColorPicker').value || '#000000';
+            const opacity = parseFloat(document.getElementById('circleOpacity').value) || 1;
+
+            const ctx = modifiedPreview.getContext('2d');
+            ctx.clearRect(0, 0, modifiedPreview.width, modifiedPreview.height);
+            ctx.drawImage(img, 0, 0);
+
+            selectedPoints.forEach(point => {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = `rgba(${parseInt(color.slice(1, 3), 16)}, ${parseInt(color.slice(3, 5), 16)}, ${parseInt(color.slice(5, 7), 16)}, ${opacity})`;
+                ctx.fill();
+            });
+        }
+
+        document.querySelector('.overlay button').addEventListener('click', () => {
+            instructionOverlay.style.display = 'none';
+            goToStep(1);
+        });
     </script>
 
 </body>
 </html>
-<!-- Step 1: Upload a side profile picture of a car -->
-<div id="step1" class="step-content">
-    <h2>Step 1: Upload a side profile picture of a car</h2>
-    <input type="file" id="imageInput" accept="image/*">
-    <button id="nextStepButton1" style="display: none;" onclick="goToStep(2)">Next Step</button>
-</div>
-
-<script>
-    const imageInput = document.getElementById('imageInput');
-    const nextStepButton1 = document.getElementById('nextStepButton1');
-    const step1 = document.getElementById('step1');
-    const step2 = document.getElementById('step2');
-
-    // Function to move to the next step
-    function goToStep(step) {
-        if (step === 2) {
-            step1.style.display = 'none'; // Hide step 1
-            step2.style.display = 'block'; // Show step 2
-            prepareStep2(); // Initialize step 2
-        }
-    }
-
-    // Listen for image input and show the "Next Step" button when an image is uploaded
-    imageInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-            nextStepButton1.style.display = 'inline-block'; // Show next step button
-        }
-    });
-</script>
-
-
-<script>
-    // Show Step 1
-    document.getElementById('step1').style.display = 'block';
-
-    // Function to preview the uploaded car image
-    function previewCarImage() {
-        const fileInput = document.getElementById('carImageUpload');
-        const previewContainer = document.getElementById('imagePreviewContainer');
-        const previewImage = document.getElementById('carImagePreview');
-        const nextStepButton = document.getElementById('nextStepButton');
-
-        const file = fileInput.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                previewImage.src = e.target.result;
-                previewContainer.style.display = 'block';
-                nextStepButton.style.display = 'inline-block';
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-
-    // Function to go to the next step (Step 2)
-    function goToStep(step) {
-        if (step === 2) {
-            document.getElementById('step1').style.display = 'none';
-            // You can add the code for Step 2 here or call a function to initialize Step 2
-            alert('Proceed to Step 2');
-        }
-    }
-</script>
-<!-- Intro Screen -->
-<div id="introScreen" class="overlay">
-    <h2>Welcome to the Car Wheel Color Preview Tool</h2>
-    <button onclick="startProcess()">Start</button>
-</div>
-
-<script>
-    // Function to hide the intro screen and show Step 1
-    function startProcess() {
-        document.getElementById('introScreen').style.display = 'none';
-        document.getElementById('step1').style.display = 'block'; // Make Step 1 visible
-    }
-</script>
-<!-- Step 2: Select Wheel Center -->
-<div id="step2" class="step-content" style="display: none;">
-    <h2>Step 2: Select the Center of Each Wheel in the Image</h2>
-    <div style="display: flex; justify-content: space-evenly; gap: 20px;">
-        <!-- Left image (clickable for wheel center) -->
-        <div style="position: relative;">
-            <img id="leftImage" src="" alt="Left Car Image" style="max-width: 45%; height: auto; border: 1px solid #ddd;">
-        </div>
-
-        <!-- Right image (with red dots marking the clicked points) -->
-        <div style="position: relative;">
-            <img id="rightImage" src="" alt="Right Car Image" style="max-width: 45%; height: auto; border: 1px solid #ddd;">
-            <canvas id="rightCanvas" style="position: absolute; top: 0; left: 0;"></canvas>
-        </div>
-    </div>
-
-    <br><br>
-    <button id="undoButton" style="display: none;" onclick="undoLastClick()">Undo Last Click</button>
-    <br><br>
-    <button id="nextStepButton" style="display: none;" onclick="goToStep(3)">Next Step</button>
-</div>
-
-<script>
-    let leftImage = document.getElementById('leftImage');
-    let rightImage = document.getElementById('rightImage');
-    let rightCanvas = document.getElementById('rightCanvas');
-    let undoButton = document.getElementById('undoButton');
-    let nextStepButton = document.getElementById('nextStepButton');
-
-    let clicks = []; // Store click positions for undo functionality
-    let isImageLoaded = false;
-
-    // Function to show the images and prepare Step 2
-    function prepareStep2() {
-        leftImage.src = rightImage.src = document.getElementById('carImagePreview').src; // Set both images to the uploaded image
-
-        rightImage.onload = () => {
-            rightCanvas.width = rightImage.width;
-            rightCanvas.height = rightImage.height;
-        };
-
-        // Allow the user to click on the left image to select the wheel center
-        leftImage.addEventListener('click', (e) => {
-            if (!isImageLoaded) return;
-            let rect = leftImage.getBoundingClientRect();
-            let x = e.clientX - rect.left;
-            let y = e.clientY - rect.top;
-
-            // Draw a red dot on the right image at the same position
-            const ctx = rightCanvas.getContext('2d');
-            ctx.beginPath();
-            ctx.arc(x, y, 5, 0, 2 * Math.PI);
-            ctx.fillStyle = 'red';
-            ctx.fill();
-
-            // Save the click position for undo functionality
-            clicks.push({ x, y });
-            undoButton.style.display = 'inline-block'; // Show undo button
-            nextStepButton.style.display = 'inline-block'; // Show next step button
-        });
-
-        isImageLoaded = true; // Ensure image is loaded before clicks are allowed
-    }
-
-    // Undo the last click
-    function undoLastClick() {
-        if (clicks.length === 0) return;
-
-        // Remove the last click
-        clicks.pop();
-
-        // Redraw the image without the last dot
-        const ctx = rightCanvas.getContext('2d');
-        ctx.clearRect(0, 0, rightCanvas.width, rightCanvas.height); // Clear the canvas
-
-        // Redraw all previous dots
-        clicks.forEach(click => {
-            ctx.beginPath();
-            ctx.arc(click.x, click.y, 5, 0, 2 * Math.PI);
-            ctx.fillStyle = 'red';
-            ctx.fill();
-        });
-
-        // Hide undo button if there are no clicks
-        if (clicks.length === 0) {
-            undoButton.style.display = 'none';
-        }
-    }
-
-    // Function to go to the next step (Step 3)
-    function goToStep(step) {
-        if (step === 3) {
-            document.getElementById('step2').style.display = 'none';
-            // Step 3 code goes here
-            alert('Proceed to Step 3');
-        }
-    }
-
-    // Initialize Step 2 when the user proceeds from the intro screen or Step 1
-    prepareStep2();
-</script>
