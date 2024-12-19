@@ -207,17 +207,36 @@
 
 </body>
 </html>
-<!-- Step 1: Upload Car Image -->
-<div id="step1" class="step-content" style="display: none;">
-    <h2>Step 1: Upload a Side Profile Picture of a Car</h2>
-    <input type="file" id="carImageUpload" accept="image/*" onchange="previewCarImage()">
-    <br><br>
-    <div id="imagePreviewContainer" style="display: none;">
-        <h3>Preview of your image:</h3>
-        <img id="carImagePreview" src="" alt="Car Image Preview" style="max-width: 100%; height: auto;">
-    </div>
-    <button id="nextStepButton" style="display: none;" onclick="goToStep(2)">Next Step</button>
+<!-- Step 1: Upload a side profile picture of a car -->
+<div id="step1" class="step-content">
+    <h2>Step 1: Upload a side profile picture of a car</h2>
+    <input type="file" id="imageInput" accept="image/*">
+    <button id="nextStepButton1" style="display: none;" onclick="goToStep(2)">Next Step</button>
 </div>
+
+<script>
+    const imageInput = document.getElementById('imageInput');
+    const nextStepButton1 = document.getElementById('nextStepButton1');
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+
+    // Function to move to the next step
+    function goToStep(step) {
+        if (step === 2) {
+            step1.style.display = 'none'; // Hide step 1
+            step2.style.display = 'block'; // Show step 2
+            prepareStep2(); // Initialize step 2
+        }
+    }
+
+    // Listen for image input and show the "Next Step" button when an image is uploaded
+    imageInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            nextStepButton1.style.display = 'inline-block'; // Show next step button
+        }
+    });
+</script>
+
 
 <script>
     // Show Step 1
