@@ -227,16 +227,22 @@
         <h2>Step 2: Select the center of each wheel in the image</h2>
         <div class="preview-container">
             <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
-                <img id="preview" alt="Original Image" style="display: none;">
+                <img id="preview" alt="Original Image">
                 <button id="undoButton">Undo Last Click</button>
             </div>
-            <canvas id="modifiedPreview" style="display: none;"></canvas>
+            <canvas id="modifiedPreview"></canvas>
         </div>
         <button onclick="goToStep(3)">Next Step</button>
     </div>
 
     <div class="upload-container" id="step3" style="display: none;">
         <h2>Step 3: Customize Wheel Appearance</h2>
+        <div class="preview-container">
+            <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
+                <img id="previewStep3" alt="Original Image">
+                <canvas id="modifiedPreviewStep3"></canvas>
+            </div>
+        </div>
         <div class="input-group">
             <label for="circleSize">Circle Size (radius):</label>
             <input type="number" id="circleSize" value="30" min="1">
@@ -264,8 +270,13 @@
         ];
         const step1NextButton = document.getElementById('step1NextButton');
         const imageInput = document.getElementById('imageInput');
+        const preview = document.getElementById('preview');
+        const previewStep3 = document.getElementById('previewStep3');
+        const modifiedPreview = document.getElementById('modifiedPreview');
+        const modifiedPreviewStep3 = document.getElementById('modifiedPreviewStep3');
 
         let currentStep = 0;
+        let img = null;
 
         function toggleSettings() {
             settingsPanel.style.display = settingsPanel.style.display === 'block' ? 'none' : 'block';
@@ -283,10 +294,32 @@
             }
             steps[step - 1].style.display = 'flex';
             currentStep = step - 1;
+            if (step === 3) {
+                previewStep3.src = preview.src;
+                modifiedPreviewStep3.width = modifiedPreview.width;
+                modifiedPreviewStep3.height = modifiedPreview.height;
+                modifiedPreviewStep3.getContext('2d').drawImage(modifiedPreview, 0, 0);
+            }
         }
 
         imageInput.addEventListener('change', () => {
-            if (imageInput.files.length > 0) {
+            const file = imageInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    modifiedPreview.style.display = 'block';
+                    img = new Image();
+                    img.onload = () => {
+                        modifiedPreview.width = img.naturalWidth;
+                        modifiedPreview.height = img.naturalHeight;
+                        const ctx = modifiedPreview.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
                 step1NextButton.style.display = 'block';
             }
         });
@@ -298,4 +331,3 @@
     </script>
 
 </body>
-</html>
