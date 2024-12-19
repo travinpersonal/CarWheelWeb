@@ -264,3 +264,104 @@
         document.getElementById('step1').style.display = 'block'; // Make Step 1 visible
     }
 </script>
+<!-- Step 2: Select Wheel Center -->
+<div id="step2" class="step-content" style="display: none;">
+    <h2>Step 2: Select the Center of Each Wheel in the Image</h2>
+    <div style="display: flex; justify-content: space-evenly; gap: 20px;">
+        <!-- Left image (clickable for wheel center) -->
+        <div style="position: relative;">
+            <img id="leftImage" src="" alt="Left Car Image" style="max-width: 45%; height: auto; border: 1px solid #ddd;">
+        </div>
+
+        <!-- Right image (with red dots marking the clicked points) -->
+        <div style="position: relative;">
+            <img id="rightImage" src="" alt="Right Car Image" style="max-width: 45%; height: auto; border: 1px solid #ddd;">
+            <canvas id="rightCanvas" style="position: absolute; top: 0; left: 0;"></canvas>
+        </div>
+    </div>
+
+    <br><br>
+    <button id="undoButton" style="display: none;" onclick="undoLastClick()">Undo Last Click</button>
+    <br><br>
+    <button id="nextStepButton" style="display: none;" onclick="goToStep(3)">Next Step</button>
+</div>
+
+<script>
+    let leftImage = document.getElementById('leftImage');
+    let rightImage = document.getElementById('rightImage');
+    let rightCanvas = document.getElementById('rightCanvas');
+    let undoButton = document.getElementById('undoButton');
+    let nextStepButton = document.getElementById('nextStepButton');
+
+    let clicks = []; // Store click positions for undo functionality
+    let isImageLoaded = false;
+
+    // Function to show the images and prepare Step 2
+    function prepareStep2() {
+        leftImage.src = rightImage.src = document.getElementById('carImagePreview').src; // Set both images to the uploaded image
+
+        rightImage.onload = () => {
+            rightCanvas.width = rightImage.width;
+            rightCanvas.height = rightImage.height;
+        };
+
+        // Allow the user to click on the left image to select the wheel center
+        leftImage.addEventListener('click', (e) => {
+            if (!isImageLoaded) return;
+            let rect = leftImage.getBoundingClientRect();
+            let x = e.clientX - rect.left;
+            let y = e.clientY - rect.top;
+
+            // Draw a red dot on the right image at the same position
+            const ctx = rightCanvas.getContext('2d');
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = 'red';
+            ctx.fill();
+
+            // Save the click position for undo functionality
+            clicks.push({ x, y });
+            undoButton.style.display = 'inline-block'; // Show undo button
+            nextStepButton.style.display = 'inline-block'; // Show next step button
+        });
+
+        isImageLoaded = true; // Ensure image is loaded before clicks are allowed
+    }
+
+    // Undo the last click
+    function undoLastClick() {
+        if (clicks.length === 0) return;
+
+        // Remove the last click
+        clicks.pop();
+
+        // Redraw the image without the last dot
+        const ctx = rightCanvas.getContext('2d');
+        ctx.clearRect(0, 0, rightCanvas.width, rightCanvas.height); // Clear the canvas
+
+        // Redraw all previous dots
+        clicks.forEach(click => {
+            ctx.beginPath();
+            ctx.arc(click.x, click.y, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = 'red';
+            ctx.fill();
+        });
+
+        // Hide undo button if there are no clicks
+        if (clicks.length === 0) {
+            undoButton.style.display = 'none';
+        }
+    }
+
+    // Function to go to the next step (Step 3)
+    function goToStep(step) {
+        if (step === 3) {
+            document.getElementById('step2').style.display = 'none';
+            // Step 3 code goes here
+            alert('Proceed to Step 3');
+        }
+    }
+
+    // Initialize Step 2 when the user proceeds from the intro screen or Step 1
+    prepareStep2();
+</script>
