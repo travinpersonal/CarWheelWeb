@@ -29,7 +29,7 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            background: #f5f5f5;
+            background: #f9f6f2;
             color: #333;
             position: relative;
         }
@@ -38,6 +38,19 @@
             margin-bottom: 20px;
             font-size: 1.8rem;
             color: #444;
+        }
+
+        h2 {
+            font-size: 2rem;
+            color: #444;
+            margin-bottom: 10px;
+        }
+
+        .instructions {
+            font-size: 1rem;
+            color: #555;
+            margin-bottom: 20px;
+            text-align: center;
         }
 
         .overlay {
@@ -57,7 +70,7 @@
 
         .overlay h2 {
             margin-bottom: 15px;
-            font-size: 1.5rem;
+            font-size: 2rem;
         }
 
         .overlay button {
@@ -211,13 +224,15 @@
     </div>
 
     <div class="upload-container" id="step1">
-        <h2>Step 1: Upload a side profile picture of a car</h2>
+        <h2>Step 1</h2>
+        <p class="instructions">Upload a side profile picture of a car.</p>
         <input type="file" id="imageInput" accept="image/*">
         <button id="step1NextButton" style="display: none;" onclick="goToStep(2)">Next Step</button>
     </div>
 
     <div class="upload-container" id="step2" style="display: none;">
-        <h2>Step 2: Select the center of each wheel in the image</h2>
+        <h2>Step 2</h2>
+        <p class="instructions">Select the center of each wheel in the image.</p>
         <div class="preview-container">
             <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
                 <img id="preview" alt="Original Image">
@@ -229,7 +244,8 @@
     </div>
 
     <div class="upload-container" id="step3" style="display: none;">
-        <h2>Step 3: Customize Wheel Appearance</h2>
+        <h2>Step 3</h2>
+        <p class="instructions">Customize the appearance of the wheel overlays.</p>
         <div class="preview-container">
             <canvas id="finalPreview"></canvas>
         </div>
@@ -258,12 +274,8 @@
             document.getElementById('step2'),
             document.getElementById('step3')
         ];
-        const step1NextButton = document.getElementById('step1NextButton');
-        const imageInput = document.getElementById('imageInput');
-        const preview = document.getElementById('preview');
         const modifiedPreview = document.getElementById('modifiedPreview');
         const finalPreview = document.getElementById('finalPreview');
-
         let currentStep = 0;
         let img = null;
         let selectedPoints = [];
@@ -274,7 +286,7 @@
 
         backgroundSlider.addEventListener('input', () => {
             const value = backgroundSlider.value;
-            const gradient = `linear-gradient(to bottom, rgba(245, 245, 245, ${1 - value}), rgba(255, 165, 0, ${value}))`;
+            const gradient = `linear-gradient(to bottom, rgba(249, 246, 242, ${1 - value}), rgba(255, 200, 150, ${value}))`;
             document.body.style.background = gradient;
         });
 
@@ -284,6 +296,7 @@
             }
             steps[step - 1].style.display = 'flex';
             currentStep = step - 1;
+
             if (step === 3) {
                 finalPreview.width = modifiedPreview.width;
                 finalPreview.height = modifiedPreview.height;
@@ -359,6 +372,5 @@
             goToStep(1);
         });
     </script>
-
 </body>
 </html>
