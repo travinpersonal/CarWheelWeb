@@ -274,8 +274,12 @@
             document.getElementById('step2'),
             document.getElementById('step3')
         ];
+        const step1NextButton = document.getElementById('step1NextButton');
+        const imageInput = document.getElementById('imageInput');
+        const preview = document.getElementById('preview');
         const modifiedPreview = document.getElementById('modifiedPreview');
         const finalPreview = document.getElementById('finalPreview');
+
         let currentStep = 0;
         let img = null;
         let selectedPoints = [];
@@ -286,7 +290,7 @@
 
         backgroundSlider.addEventListener('input', () => {
             const value = backgroundSlider.value;
-            const gradient = `linear-gradient(to bottom, rgba(249, 246, 242, ${1 - value}), rgba(255, 200, 150, ${value}))`;
+            const gradient = `linear-gradient(to bottom, rgba(245, 245, 245, ${1 - value}), rgba(255, 165, 0, ${value}))`;
             document.body.style.background = gradient;
         });
 
@@ -296,7 +300,6 @@
             }
             steps[step - 1].style.display = 'flex';
             currentStep = step - 1;
-
             if (step === 3) {
                 finalPreview.width = modifiedPreview.width;
                 finalPreview.height = modifiedPreview.height;
@@ -372,5 +375,6 @@
             goToStep(1);
         });
     </script>
+
 </body>
 </html>
