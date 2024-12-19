@@ -29,14 +29,15 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            background: #f5f5f5;
+            background: #f0f0f0; /* Warmer white */
             color: #333;
             position: relative;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         h1 {
             margin-bottom: 20px;
-            font-size: 1.8rem;
+            font-size: 2.5rem;
             color: #444;
         }
 
@@ -57,7 +58,7 @@
 
         .overlay h2 {
             margin-bottom: 15px;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
         }
 
         .overlay p {
@@ -85,9 +86,9 @@
             display: none;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
             background: #fff;
-            padding: 20px;
+            padding: 30px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
@@ -96,17 +97,17 @@
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            gap: 5px;
+            gap: 10px;
             width: 100%;
         }
 
         label {
-            font-size: 0.9rem;
+            font-size: 1rem;
             color: #555;
         }
 
         input[type="file"] {
-            padding: 10px;
+            padding: 15px;
             border: 1px solid #ccc;
             border-radius: 5px;
             cursor: pointer;
@@ -114,7 +115,7 @@
 
         input[type="number"], input[type="color"], input[type="range"] {
             width: 100%;
-            padding: 8px;
+            padding: 12px;
             border: 1px solid #ddd;
             border-radius: 5px;
         }
@@ -134,14 +135,14 @@
             justify-content: space-evenly;
             align-items: center;
             margin-top: 20px;
-            gap: 20px;
+            gap: 40px;
             width: 100%;
-            max-width: 900px;
+            max-width: 1000px;
         }
 
         img, canvas {
-            max-width: 45%;
-            max-height: 400px;
+            max-width: 50%;
+            max-height: 450px;
             border-radius: 10px;
             border: 1px solid #ddd;
         }
@@ -152,12 +153,12 @@
 
         .settings-icon {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 20px;
+            right: 20px;
             background: transparent;
             border: none;
             cursor: pointer;
-            font-size: 1.5rem;
+            font-size: 2rem;
             color: #333;
         }
 
@@ -167,25 +168,25 @@
             top: 50px;
             right: 20px;
             background: #fff;
-            padding: 10px;
+            padding: 15px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             z-index: 1001;
         }
 
         .settings-panel label {
-            font-size: 0.9rem;
-            margin-bottom: 5px;
+            font-size: 1rem;
+            margin-bottom: 10px;
         }
 
         button {
             background: #007BFF;
             color: #fff;
             border: none;
-            padding: 10px 15px;
+            padding: 12px 18px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 1.2rem;
         }
 
         button:hover {
@@ -199,7 +200,7 @@
 
         .buttons {
             display: flex;
-            gap: 10px;
+            gap: 15px;
         }
 
     </style>
@@ -210,6 +211,12 @@
     <div class="settings-panel" id="settingsPanel">
         <label for="backgroundSlider">Background Color</label>
         <input type="range" id="backgroundSlider" min="0" max="1" step="0.01" value="0">
+        
+        <label for="backgroundDarkness">Background Darkness</label>
+        <input type="range" id="backgroundDarkness" min="0" max="1" step="0.01" value="0">
+        
+        <label for="invertColors">Invert Colors</label>
+        <input type="checkbox" id="invertColors">
     </div>
 
     <div class="overlay" id="instructionOverlay">
@@ -239,7 +246,6 @@
         <h2>Step 3: Customize Wheel Appearance</h2>
         <div class="preview-container">
             <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
-                <img id="previewStep3" alt="Original Image">
                 <canvas id="modifiedPreviewStep3"></canvas>
             </div>
         </div>
@@ -261,6 +267,8 @@
 
     <script>
         const backgroundSlider = document.getElementById('backgroundSlider');
+        const backgroundDarkness = document.getElementById('backgroundDarkness');
+        const invertColorsCheckbox = document.getElementById('invertColors');
         const settingsPanel = document.getElementById('settingsPanel');
         const instructionOverlay = document.getElementById('instructionOverlay');
         const steps = [
@@ -271,37 +279,35 @@
         const step1NextButton = document.getElementById('step1NextButton');
         const imageInput = document.getElementById('imageInput');
         const preview = document.getElementById('preview');
-        const previewStep3 = document.getElementById('previewStep3');
         const modifiedPreview = document.getElementById('modifiedPreview');
         const modifiedPreviewStep3 = document.getElementById('modifiedPreviewStep3');
 
         let currentStep = 0;
         let img = null;
-        let wheelCenters = [];
+        let circles = [];
 
         function toggleSettings() {
             settingsPanel.style.display = settingsPanel.style.display === 'block' ? 'none' : 'block';
         }
 
+        function invertColors() {
+            if (invertColorsCheckbox.checked) {
+                document.body.style.filter = 'invert(1)';
+            } else {
+                document.body.style.filter = 'invert(0)';
+            }
+        }
+
         backgroundSlider.addEventListener('input', () => {
             const value = backgroundSlider.value;
-            const gradient = `linear-gradient(to bottom, rgba(245, 245, 245, ${1 - value}), rgba(255, 165, 0, ${value}))`;
+            const gradient = `linear-gradient(to bottom, rgba(240, 240, 240, ${1 - value}), rgba(255, 165, 0, ${value}))`;
             document.body.style.background = gradient;
         });
 
-        function goToStep(step) {
-            if (currentStep >= 0) {
-                steps[currentStep].style.display = 'none';
-            }
-            steps[step - 1].style.display = 'flex';
-            currentStep = step - 1;
-            if (step === 3) {
-                previewStep3.src = preview.src;
-                modifiedPreviewStep3.width = modifiedPreview.width;
-                modifiedPreviewStep3.height = modifiedPreview.height;
-                modifiedPreviewStep3.getContext('2d').drawImage(modifiedPreview, 0, 0);
-            }
-        }
+        backgroundDarkness.addEventListener('input', () => {
+            const value = backgroundDarkness.value;
+            document.body.style.backgroundColor = `rgba(240, 240, 240, ${1 - value})`;
+        });
 
         imageInput.addEventListener('change', () => {
             const file = imageInput.files[0];
@@ -325,39 +331,25 @@
             }
         });
 
-        preview.addEventListener('click', (e) => {
-            const rect = preview.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            wheelCenters.push({ x, y });
-            const ctx = modifiedPreview.getContext('2d');
-            ctx.beginPath();
-            ctx.arc(x, y, 5, 0, 2 * Math.PI);
-            ctx.fillStyle = 'red';
-            ctx.fill();
-        });
-
         document.querySelector('.overlay button').addEventListener('click', () => {
             instructionOverlay.style.display = 'none';
             goToStep(1);
         });
 
-        document.getElementById('undoButton').addEventListener('click', () => {
-            wheelCenters.pop();
-            const ctx = modifiedPreview.getContext('2d');
-            ctx.clearRect(0, 0, modifiedPreview.width, modifiedPreview.height);
-            img.onload = () => {
-                ctx.drawImage(img, 0, 0);
-                wheelCenters.forEach(center => {
-                    ctx.beginPath();
-                    ctx.arc(center.x, center.y, 5, 0, 2 * Math.PI);
-                    ctx.fillStyle = 'red';
-                    ctx.fill();
-                });
-            };
-            img.src = preview.src;
-        });
+        function goToStep(step) {
+            if (currentStep >= 0) {
+                steps[currentStep].style.display = 'none';
+            }
+            steps[step - 1].style.display = 'flex';
+            currentStep = step - 1;
+            if (step === 3) {
+                previewStep3.src = preview.src;
+                modifiedPreviewStep3.width = modifiedPreview.width;
+                modifiedPreviewStep3.height = modifiedPreview.height;
+                modifiedPreviewStep3.getContext('2d').drawImage(modifiedPreview, 0, 0);
+            }
+        }
+
     </script>
 
 </body>
