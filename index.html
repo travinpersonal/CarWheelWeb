@@ -213,3 +213,47 @@
 
 </body>
 </html>
+<!-- Step 1: Upload Car Image -->
+<div id="step1" class="step-content" style="display: none;">
+    <h2>Step 1: Upload a Side Profile Picture of a Car</h2>
+    <input type="file" id="carImageUpload" accept="image/*" onchange="previewCarImage()">
+    <br><br>
+    <div id="imagePreviewContainer" style="display: none;">
+        <h3>Preview of your image:</h3>
+        <img id="carImagePreview" src="" alt="Car Image Preview" style="max-width: 100%; height: auto;">
+    </div>
+    <button id="nextStepButton" style="display: none;" onclick="goToStep(2)">Next Step</button>
+</div>
+
+<script>
+    // Show Step 1
+    document.getElementById('step1').style.display = 'block';
+
+    // Function to preview the uploaded car image
+    function previewCarImage() {
+        const fileInput = document.getElementById('carImageUpload');
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        const previewImage = document.getElementById('carImagePreview');
+        const nextStepButton = document.getElementById('nextStepButton');
+
+        const file = fileInput.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImage.src = e.target.result;
+                previewContainer.style.display = 'block';
+                nextStepButton.style.display = 'inline-block';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Function to go to the next step (Step 2)
+    function goToStep(step) {
+        if (step === 2) {
+            document.getElementById('step1').style.display = 'none';
+            // You can add the code for Step 2 here or call a function to initialize Step 2
+            alert('Proceed to Step 2');
+        }
+    }
+</script>
