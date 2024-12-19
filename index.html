@@ -8,8 +8,6 @@
 
 </html>
 ...
-...
-...
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -222,6 +220,7 @@
     <div class="upload-container" id="step1">
         <h2>Step 1: Upload a side profile picture of a car</h2>
         <input type="file" id="imageInput" accept="image/*">
+        <button id="step1NextButton" style="display: none;" onclick="goToStep(2)">Next Step</button>
     </div>
 
     <div class="upload-container" id="step2" style="display: none;">
@@ -263,6 +262,8 @@
             document.getElementById('step2'),
             document.getElementById('step3')
         ];
+        const step1NextButton = document.getElementById('step1NextButton');
+        const imageInput = document.getElementById('imageInput');
 
         let currentStep = 0;
 
@@ -283,6 +284,17 @@
             steps[step - 1].style.display = 'flex';
             currentStep = step - 1;
         }
+
+        imageInput.addEventListener('change', () => {
+            if (imageInput.files.length > 0) {
+                step1NextButton.style.display = 'block';
+            }
+        });
+
+        document.querySelector('.overlay button').addEventListener('click', () => {
+            instructionOverlay.style.display = 'none';
+            goToStep(1);
+        });
     </script>
 
 </body>
