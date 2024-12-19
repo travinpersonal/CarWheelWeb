@@ -277,6 +277,7 @@
 
         let currentStep = 0;
         let img = null;
+        let wheelCenters = [];
 
         function toggleSettings() {
             settingsPanel.style.display = settingsPanel.style.display === 'block' ? 'none' : 'block';
@@ -324,10 +325,40 @@
             }
         });
 
+        preview.addEventListener('click', (e) => {
+            const rect = preview.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            wheelCenters.push({ x, y });
+            const ctx = modifiedPreview.getContext('2d');
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = 'red';
+            ctx.fill();
+        });
+
         document.querySelector('.overlay button').addEventListener('click', () => {
             instructionOverlay.style.display = 'none';
             goToStep(1);
         });
+
+        document.getElementById('undoButton').addEventListener('click', () => {
+            wheelCenters.pop();
+            const ctx = modifiedPreview.getContext('2d');
+            ctx.clearRect(0, 0, modifiedPreview.width, modifiedPreview.height);
+            img.onload = () => {
+                ctx.drawImage(img, 0, 0);
+                wheelCenters.forEach(center => {
+                    ctx.beginPath();
+                    ctx.arc(center.x, center.y, 5, 0, 2 * Math.PI);
+                    ctx.fillStyle = 'red';
+                    ctx.fill();
+                });
+            };
+            img.src = preview.src;
+        });
     </script>
 
 </body>
+</html>
