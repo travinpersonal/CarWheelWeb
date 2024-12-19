@@ -190,12 +190,12 @@
 
         <div class="input-group">
             <label for="circleSize">Circle Size (radius):</label>
-            <input type="number" id="circleSize" value="30" min="1">
+            <input type="number" id="circleSize" value="5" min="1">
         </div>
 
         <div class="input-group">
             <label for="circleColor">Circle Color:</label>
-            <input type="color" id="circleColorPicker" value="#00ff00">
+            <input type="color" id="circleColorPicker" value="#ff0000">
         </div>
 
         <div class="input-group">
@@ -288,8 +288,8 @@
         function drawCircles() {
             if (!img) return;
 
-            const radius = parseInt(circleSizeInput.value) || 30;
-            const color = circleColorPicker.value || '#00ff00';
+            const radius = parseInt(circleSizeInput.value) || 5;
+            const color = circleColorPicker.value || '#ff0000';
             const opacity = parseFloat(circleOpacityInput.value) || 1;
 
             const canvas = modifiedPreview;
@@ -302,13 +302,7 @@
             ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight);
 
             selectedPoints.forEach(point => {
-                // Draw a pea-sized red dot for click markers
-                ctx.beginPath();
-                ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
-                ctx.fillStyle = 'red';
-                ctx.fill();
-
-                // Draw larger circle for wheel preview
+                // Draw circle for wheel preview
                 ctx.beginPath();
                 ctx.arc(point.x, point.y, radius, 0, 2 * Math.PI);
                 ctx.fillStyle = hexToRgba(color, opacity);
