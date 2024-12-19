@@ -257,3 +257,16 @@
         }
     }
 </script>
+<!-- Intro Screen -->
+<div id="introScreen" class="overlay">
+    <h2>Welcome to the Car Wheel Color Preview Tool</h2>
+    <button onclick="startProcess()">Start</button>
+</div>
+
+<script>
+    // Function to hide the intro screen and show Step 1
+    function startProcess() {
+        document.getElementById('introScreen').style.display = 'none';
+        document.getElementById('step1').style.display = 'block'; // Make Step 1 visible
+    }
+</script>
