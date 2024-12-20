@@ -1,8 +1,80 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wheel Color Tester</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+       body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(to bottom right, #e0eafc, #cfdef3);
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    overflow: hidden;
+}
+
+#app-container {
+    background-color: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    max-width: 700px;
+    width: 90%;
+    text-align: center;
+    overflow: hidden;
+}
+
+/* ... (rest of the basic styles like h1, h2, p, button, #image-canvas, .input-group remain the same) */
+
+/* Corrected Range Input Styles */
+input[type="range"] {
+    width: 100%;
+    height: 8px; /* Slightly thicker track */
+    border-radius: 5px;
+    background: #ddd;
+    outline: none;
+    opacity: 0.8; /* Slightly less transparent */
+    transition: opacity .2s;
+    margin: 10px 0; /* Add some margin top and bottom */
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px; /* Slightly larger thumb */
+    height: 20px;
+    border-radius: 50%;
+    background: #3498db;
+    cursor: pointer;
+    border: none; /* Remove default border */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Add a shadow to the thumb */
+}
+
+input[type="range"]::-moz-range-thumb { /* Firefox */
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #3498db;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+input[type="range"]::-ms-thumb { /* IE/Edge */
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #3498db;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ... (rest of the styles like .custom-file-upload, #file-name-display) */
+    </style>
 </head>
 <body>
     <div id="app-container">
@@ -22,12 +94,12 @@
 
         <div id="step-two" style="display: none;">
             <h2>Step 2: Select Wheel Centers</h2>
-            <canvas id="image-canvas"></canvas>
-            <button id="next-button-2" disabled>Next</button>
+            <canvas id="click-canvas"></canvas> <button id="next-button-2" disabled>Next</button>
         </div>
 
         <div id="step-three" style="display: none;">
             <h2>Step 3: Customize</h2>
+            <canvas id="output-canvas"></canvas>
             <div class="input-group">
                 <label for="circle-color">Color:</label>
                 <input type="color" id="circle-color" value="#FF0000">
@@ -42,6 +114,60 @@
             </div>
         </div>
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        // ... (JavaScript from previous response, with the following changes)
+        const clickCanvas = document.getElementById('click-canvas');
+        const clickCtx = clickCanvas.getContext('2d');
+        const outputCanvas = document.getElementById('output-canvas');
+        const outputCtx = outputCanvas.getContext('2d');
+        // ... other variable declarations
+
+        imageUpload.addEventListener('change', (event) => {
+            // ... (file reading and image loading)
+            reader.onload = (e) => {
+                image.onload = () => {
+                    clickCanvas.width = image.width;
+                    clickCanvas.height = image.height;
+                    clickCtx.drawImage(image, 0, 0);
+                    outputCanvas.width = image.width;
+                    outputCanvas.height = image.height;
+                    outputCtx.drawImage(image, 0, 0);
+                };
+                image.src = e.target.result;
+                nextButton1.disabled = false;
+            };
+            // ...
+        });
+
+        clickCanvas.addEventListener('click', (event) => {
+            // ... (click handling - same as before)
+            drawCircles(); //Call drawCircles here to update the output canvas
+        });
+
+        nextButton2.addEventListener('click', () => {
+          stepTwo.style.display = 'none';
+          stepThree.style.display = 'block';
+          drawCircles(); // Draw initial circles on step 3
+        });
+
+        function drawCircles() {
+            outputCtx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
+            outputCtx.drawImage(image, 0, 0);
+            outputCtx.fillStyle = circleColor.value;
+            outputCtx.globalAlpha = circleOpacity.value;
+            clicks.forEach(click => {
+                outputCtx.beginPath();
+                outputCtx.arc(click.x, click.y, circleSize.value, 0, 2 * Math.PI);
+                outputCtx.fill();
+            });
+            outputCtx.globalAlpha = 1;
+        }
+
+        circleColor.addEventListener('input', drawCircles);
+        circleSize.addEventListener('input', drawCircles);
+        circleOpacity.addEventListener('input', drawCircles);
+
+    </script>
 </body>
 </html>
