@@ -3,285 +3,288 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Car Wheel Color Preview</title>
-    <script async src="https://docs.opencv.org/4.x/opencv.js"></script>
+    <title>Car Wheel Color Editor</title>
     <style>
-        * {
+        body {
+            font-family: 'Arial', sans-serif; /* Simple and modern font */
+            background-color: #2b2b2b; /* Hard gray brutalism */
+            color: #f4f4f4; /* Unified text color */
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            background: #f9f6f2;
-            color: #333;
-            position: relative;
+            align-items: center;
+            height: 100vh;
         }
-
-        h1 {
-            margin-bottom: 20px;
-            font-size: 1.8rem;
-            color: #444;
-        }
-
-        h2 {
-            font-size: 2rem;
-            color: #444;
-            margin-bottom: 10px;
-        }
-
-        .instructions {
-            font-size: 1rem;
-            color: #555;
-            margin-bottom: 20px;
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #3a3a3a; /* Darker gray for container */
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
             text-align: center;
+            transform: scale(1.5); /* UI size adjustment */
         }
-
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+        h1, h2 {
+            margin: 0 0 20px;
+            color: #f4f4f4; /* Unified text color */
         }
-
-        .overlay h2 {
-            margin-bottom: 15px;
-            font-size: 2rem;
-        }
-
-        .overlay button {
-            background: #007BFF;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-
-        .overlay button:hover {
-            background: #0056b3;
-        }
-
-        .upload-container {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            background: #fff;
-            padding: 20px;
+        img {
+            max-width: 100%;
             border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 5px;
-            width: 100%;
-        }
-
-        label {
-            font-size: 0.9rem;
-            color: #555;
-        }
-
-        input[type="file"] {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        input[type="number"], input[type="color"], input[type="range"] {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-
-        input[type="color"] {
-            height: 40px;
-            background: none;
-            cursor: pointer;
-        }
-
-        input[type="range"] {
-            width: 100%;
-        }
-
-        .preview-container {
-            display: flex;
-            justify-content: space-evenly;
-            align-items: center;
-            margin-top: 20px;
-            gap: 20px;
-            width: 100%;
-            max-width: 1200px;
-        }
-
-        img, canvas {
-            width: 500px;
-            height: auto;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-        }
-
-        #preview {
             cursor: crosshair;
         }
-
-        .settings-icon {
+        .dot {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            font-size: 1.5rem;
-            color: #333;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: red;
+            transform: translate(-50%, -50%);
         }
-
-        .settings-panel {
-            display: none;
-            position: fixed;
-            top: 50px;
-            right: 20px;
-            background: #fff;
-            padding: 10px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            z-index: 1001;
+        #image-container, #image-container-custom, #image-container-final {
+            position: relative;
+            display: inline-block;
         }
-
-        .settings-panel label {
-            font-size: 0.9rem;
+        .controls {
+            margin: 20px 0;
+        }
+        .controls label {
+            display: block;
             margin-bottom: 5px;
         }
-
-        button {
-            background: #007BFF;
-            color: #fff;
-            border: none;
-            padding: 10px 15px;
+        .controls input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
             border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .controls input[type="range"]:hover {
+            opacity: 1;
+        }
+        .controls input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #8aa387;
             cursor: pointer;
-            font-size: 1rem;
         }
-
+        .controls input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #8aa387;
+            cursor: pointer;
+        }
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            color: #f4f4f4;
+            background-color: #8aa387;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
         button:hover {
-            background: #0056b3;
+            background-color: #6d8a6c;
         }
-
-        #undoButton {
-            display: none;
-            margin-top: 10px;
+        button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
         }
-
-        .buttons {
-            display: flex;
-            gap: 10px;
-        }
-
     </style>
 </head>
 <body>
-
-    <button class="settings-icon" onclick="toggleSettings()">⚙️</button>
-    <div class="settings-panel" id="settingsPanel">
-        <label for="backgroundSlider">Background Color</label>
-        <input type="range" id="backgroundSlider" min="0" max="1" step="0.01" value="0">
+    <!-- Step 1: Upload Image -->
+    <div id="step-1" class="container">
+        <h1>Step 1: Upload Image</h1>
+        <input type="file" id="image-input" accept="image/*">
+        <button id="next-to-step-2" disabled onclick="goToStep(2)">Next</button>
     </div>
 
-    <div class="overlay" id="instructionOverlay">
-        <h2>Welcome to the Car Wheel Color Preview Tool</h2>
-        <button onclick="goToStep(1)">Start</button>
+    <!-- Step 2: Select Wheels -->
+    <div id="step-2" class="container" style="display: none;">
+        <h1>Step 2: Select Wheels</h1>
+        <div id="image-container" style="position: relative;">
+            <img id="car-image" alt="Car Image">
+        </div>
+        <p>Click on the center of the wheels to mark them.</p>
+        <button onclick="undoClick()">Undo</button>
+        <button onclick="goToStep(1)">Back</button>
+        <button id="next-to-step-3" disabled onclick="goToStep(3)">Next</button>
     </div>
 
-    <div class="upload-container" id="step1">
-        <h2>Step 1</h2>
-        <p class="instructions">Upload a side profile picture of a car.</p>
-        <input type="file" id="imageInput" accept="image/*">
-        <button id="step1NextButton" style="display: none;" onclick="goToStep(2)">Next Step</button>
+    <!-- Step 3: Customize Wheels -->
+    <div id="step-3" class="container" style="display: none;">
+        <h1>Step 3: Customize Wheels</h1>
+        <div id="image-container-custom" style="position: relative;">
+            <img id="car-image-custom" alt="Car Image">
+        </div>
+        <div class="controls">
+            <label for="dot-size">Size:</label>
+            <input type="range" id="dot-size" min="5" max="50" value="30">
+
+            <label for="dot-color">Color:</label>
+            <input type="color" id="dot-color" value="#000000">
+
+            <label for="dot-opacity">Opacity:</label>
+            <input type="range" id="dot-opacity" min="0.1" max="1" step="0.1" value="1">
+        </div>
+        <button onclick="goToStep(2)">Back</button>
+        <button onclick="goToStep(4)">Finish</button>
     </div>
 
-    <div class="upload-container" id="step2" style="display: none;">
-        <h2>Step 2</h2>
-        <p class="instructions">Select the center of each wheel in the image.</p>
-        <div class="preview-container">
-            <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
-                <img id="preview" alt="Original Image">
-                <button id="undoButton">Undo Last Click</button>
-            </div>
-            <canvas id="modifiedPreview"></canvas>
+    <!-- Step 4: Final Image Display -->
+    <div id="step-4" class="container" style="display: none;">
+        <h1>Final Image</h1>
+        <div id="image-container-final" style="position: relative;">
+            <img id="final-image" alt="Car Image">
+            <!-- Add dots from Step 3 -->
         </div>
-        <button onclick="goToStep(3)">Next Step</button>
+        <button onclick="goToStep(1)">Start Again</button>
+        <button onclick="goToStep(3)">Back</button>
     </div>
 
-    <div class="upload-container" id="step3" style="display: none;">
-        <h2>Step 3</h2>
-        <p class="instructions">Customize the appearance of the wheel overlays.</p>
-        <div class="preview-container">
-            <canvas id="finalPreview"></canvas>
-        </div>
-        <div class="input-group">
-            <label for="circleSize">Circle Size (radius):</label>
-            <input type="number" id="circleSize" value="30" min="1">
-        </div>
+    <script>
+        const steps = ["step-1", "step-2", "step-3", "step-4"];
+        const imageInput = document.getElementById('image-input');
+        const carImage = document.getElementById('car-image');
+        const carImageCustom = document.getElementById('car-image-custom');
+        const finalImage = document.getElementById('final-image');
+        const nextToStep2 = document.getElementById('next-to-step-2');
+        const nextToStep3 = document.getElementById('next-to-step-3');
 
-        <div class="input-group">
-            <label for="circleColor">Circle Color:</label>
-            <input type="color" id="circleColorPicker" value="#000000">
-        </div>
+        const dots = [];
 
-        <div class="input-group">
-            <label for="circleOpacity">Circle Opacity:</label>
-            <input type="range" id="circleOpacity" min="0" max="1" step="0.01" value="1">
-        </div>
-    </div>
-
-    <script> 
-        const backgroundSlider = document.getElementById('backgroundSlider');
-        const settingsPanel = document.getElementById('settingsPanel');
-        const instructionOverlay = document.getElementById('instructionOverlay');
-        const steps = [
-            document.getElementById('step1'),
-            document.getElementById('step2'),
-            document.getElementById('step3')
-        ];
-        const step1NextButton = document.getElementById('step1NextButton');
-        const imageInput = document.getElementById('imageInput');
-        const preview = document.getElementById('preview');
-        const modifiedPreview = document.getElementById('modifiedPreview');
-        const finalPreview = document.getElementById('finalPreview');
-
-        let currentStep = 0;
-        let img = null;
-        let selectedPoints = [];
-
-        function toggleSettings() {
-            settingsPanel.style.display = settingsPanel.style.display === 'block' ? 'none' : 'block';
-        }
-
-        backgroundSlider.addEventListener('input', () => {
-            const value = backgroundSlider.value;
-            const gradient = `linear-gradient(to bottom, rgba(245, 245, 245, ${1 - value}), rgba(255, 165, 0, ${value}))`;
-            document.body.style.background = gradient;
+        imageInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    carImage.src = e.target.result;
+                    carImageCustom.src = e.target.result;
+                    finalImage.src = e.target.result;
+                    nextToStep2.disabled = false;
+                };
+                reader.readAsDataURL(file);
+            }
         });
 
+        carImage.addEventListener('click', (event) => {
+            const rect = carImage.getBoundingClientRect();
+            const container = document.getElementById('image-container');
+            const x = ((event.clientX - rect.left) / rect.width) * container.offsetWidth;
+            const y = ((event.clientY - rect.top) / rect.height) * container.offsetHeight;
+
+            const dot = document.createElement('div');
+            dot.className = 'dot';
+            dot.style.left = `${x}px`;
+            dot.style.top = `${y-2.48}px`;
+
+            container.appendChild(dot);
+            dots.push({ x, y });
+
+            if (dots.length > 0) {
+                nextToStep3.disabled = false;
+            }
+        });
+
+        function undoClick() {
+            if (dots.length > 0) {
+                dots.pop();
+                const container = document.getElementById('image-container');
+                container.querySelectorAll('.dot').forEach(dot => dot.remove());
+
+                dots.forEach(dot => {
+                    const dotElement = document.createElement('div');
+                    dotElement.className = 'dot';
+                    dotElement.style.left = `${dot.x}px`;
+                    dotElement.style.top = `${dot.y-2.48}px`;
+                    container.appendChild(dotElement);
+                });
+
+                nextToStep3.disabled = dots.length === 0;
+            }
+        }
+
+        function goToStep(stepNumber) {
+            steps.forEach((step, index) => {
+                document.getElementById(step).style.display = index + 1 === stepNumber ? 'block' : 'none';
+            });
+
+            if (stepNumber === 3) {
+                syncDots();
+            }
+            if (stepNumber === 4) {
+                displayFinalImage();
+            }
+        }
+
+        function syncDots() {
+            const container = document.getElementById('image-container-custom');
+            container.querySelectorAll('.dot').forEach(dot => dot.remove());
+
+            dots.forEach(dot => {
+                const dotElement = document.createElement('div');
+                dotElement.className = 'dot';
+                dotElement.style.left = `${dot.x}px`;
+                dotElement.style.top = `${dot.y-2.48}px`;
+                dotElement.style.width = `30px`;
+                dotElement.style.height = `30px`;
+                dotElement.style.backgroundColor = `black`;
+                container.appendChild(dotElement);
+            });
+        }
+
+        function displayFinalImage() {
+            const container = document.getElementById('image-container-final');
+            container.querySelectorAll('.dot').forEach(dot => dot.remove());
+
+            dots.forEach(dot => {
+                const dotElement = document.createElement('div');
+                dotElement.className = 'dot';
+                dotElement.style.left = `${dot.x}px`;
+                dotElement.style.top = `${dot.y-2.48}px`;
+                dotElement.style.width = `dot-size`;
+                dotElement.style.height = `dot-size`;
+                dotElement.style.backgroundColor = `dot-color`;
+                container.appendChild(dotElement);
+            });
+        }
+
+        document.getElementById('dot-size').addEventListener('input', (event) => {
+            const size = event.target.value;
+            const container = document.getElementById('image-container-custom');
+            container.querySelectorAll('.dot').forEach(dot => {
+                dot.style.width = `${size}px`;
+                dot.style.height = `${size}px`;
+            });
+        });
+
+        document.getElementById('dot-color').addEventListener('input', (event) => {
+            const color = event.target.value;
+            const container = document.getElementById('image-container-custom');
+            container.querySelectorAll('.dot').forEach(dot => {
+                dot.style.backgroundColor = color;
+            });
+        });
+
+        document.getElementById('dot-opacity').addEventListener('input', (event) => {
+            const opacity = event.target.value;
+            const container = document.getElementById('image-container-custom');
+            container.querySelectorAll('.dot').forEach(dot => {
+                dot.style.opacity = opacity;
+            });
+        });
     </script>
+</body>
+</html>
