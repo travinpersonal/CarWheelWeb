@@ -80,22 +80,23 @@
             background: #8aa387;
             cursor: pointer;
         }
+
         button {
             padding: 10px 15px;
             font-size: 16px;
             color: #f4f4f4;
-            background-color: #8aa387;
+            background-color: #6d2c2c; /* Dark slightly unsaturated red */
             border: none;
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.3s;
             margin: 5px 0;
         }
-        button:hover {
-            background-color: #6d8a6c;
+        button:hover:enabled {
+            background-color: #582323; /* Darker red on hover */
         }
         button:disabled {
-            background-color: #555;
+            background-color: #555; /* Gray when disabled */
             cursor: not-allowed;
         }
 
@@ -144,17 +145,20 @@
     <div id="step-1" class="container" style="display: none;">
         <h1>Step 1: Upload Image</h1>
         <input type="file" id="image-input" accept="image/*">
+                <p>Please ensure image is a side profile of a car for best results.</p>
+
         <button id="next-to-step-2" disabled onclick="goToStep(2)">Next</button>
     </div>
 
     <!-- Step 2: Select Wheels -->
     <div id="step-2" class="container" style="display: none;">
         <h1>Step 2: Select Wheels</h1>
+        
         <div id="image-container" style="position: relative;">
             <img id="car-image" alt="Car Image">
         </div>
         <p>Click on the center of the wheels to mark them.</p>
-        <button onclick="undoClick()">Undo</button>
+        <button id="undo-button" disabled onclick="undoClick()">Undo</button>
         <button onclick="goToStep(1)">Back</button>
         <button id="next-to-step-3" disabled onclick="goToStep(3)">Next</button>
     </div>
@@ -202,13 +206,14 @@
         const finalImage = document.getElementById('final-image');
         const nextToStep2 = document.getElementById('next-to-step-2');
         const nextToStep3 = document.getElementById('next-to-step-3');
+        const undoButton = document.getElementById('undo-button');
 
         let dotSizeValue = 15;
         let dotColorValue = "#000000";
         let dotOpacityValue = 1;
 
-        // We'll store dots as ratios to ensure perfect placement
-        const dots = []; // Each dot: { xRatio: number, yRatio: number }
+        // We'll store dots as ratios relative to the image dimensions
+        const dots = [];
 
         document.getElementById('close-modal').addEventListener('click', () => {
             document.getElementById('welcome-modal').style.display = 'none';
@@ -230,10 +235,9 @@
         });
 
         carImage.addEventListener('click', (event) => {
-            // Use offsetX and offsetY to get exact coordinates where clicked
             const x = event.offsetX;
             const y = event.offsetY;
-            
+
             // Store as ratios relative to the image dimensions
             const xRatio = x / carImage.width;
             const yRatio = y / carImage.height;
@@ -241,8 +245,10 @@
 
             updateDotsInContainer(document.getElementById('image-container'), carImage.width, carImage.height, dots, 10, "red", 1);
 
+            // Enable buttons after first dot is placed
             if (dots.length > 0) {
                 nextToStep3.disabled = false;
+                undoButton.disabled = false;
             }
         });
 
@@ -250,7 +256,12 @@
             if (dots.length > 0) {
                 dots.pop();
                 updateDotsInContainer(document.getElementById('image-container'), carImage.width, carImage.height, dots, 10, "red", 1);
-                nextToStep3.disabled = dots.length === 0;
+
+                // Disable if no dots left
+                if (dots.length === 0) {
+                    nextToStep3.disabled = true;
+                    undoButton.disabled = true;
+                }
             }
         }
 
@@ -268,22 +279,17 @@
         }
 
         function syncDotsToCustomization() {
-            // Display dots in Step 3 with user customizations
             const container = document.getElementById('image-container-custom');
             updateDotsInContainer(container, carImageCustom.width, carImageCustom.height, dots, dotSizeValue, dotColorValue, dotOpacityValue);
         }
 
         function displayFinalImage() {
-            // Display final dots with current customizations
             const container = document.getElementById('image-container-final');
             updateDotsInContainer(container, finalImage.width, finalImage.height, dots, dotSizeValue, dotColorValue, dotOpacityValue);
         }
 
         function updateDotsInContainer(container, imgWidth, imgHeight, dotsArray, size, color, opacity) {
-            // Remove old dots
             container.querySelectorAll('.dot').forEach(dot => dot.remove());
-
-            // Add new dots
             dotsArray.forEach(dot => {
                 const dotElement = document.createElement('div');
                 dotElement.className = 'dot';
@@ -292,7 +298,6 @@
                 dotElement.style.backgroundColor = color;
                 dotElement.style.opacity = opacity;
 
-                // Position the dot at the exact clicked ratio
                 const pxX = dot.xRatio * imgWidth;
                 const pxY = dot.yRatio * imgHeight;
 
@@ -305,21 +310,18 @@
 
         document.getElementById('dot-size').addEventListener('input', (event) => {
             dotSizeValue = parseInt(event.target.value, 10);
-            // Update dots in Step 3
             const container = document.getElementById('image-container-custom');
             updateDotsInContainer(container, carImageCustom.width, carImageCustom.height, dots, dotSizeValue, dotColorValue, dotOpacityValue);
         });
 
         document.getElementById('dot-color').addEventListener('input', (event) => {
             dotColorValue = event.target.value;
-            // Update dots in Step 3
             const container = document.getElementById('image-container-custom');
             updateDotsInContainer(container, carImageCustom.width, carImageCustom.height, dots, dotSizeValue, dotColorValue, dotOpacityValue);
         });
 
         document.getElementById('dot-opacity').addEventListener('input', (event) => {
             dotOpacityValue = event.target.value;
-            // Update dots in Step 3
             const container = document.getElementById('image-container-custom');
             updateDotsInContainer(container, carImageCustom.width, carImageCustom.height, dots, dotSizeValue, dotColorValue, dotOpacityValue);
         });
@@ -331,10 +333,8 @@
             canvas.height = finalImg.height;
             const ctx = canvas.getContext('2d');
 
-            // Draw the final image onto the canvas
             ctx.drawImage(finalImg, 0, 0, canvas.width, canvas.height);
 
-            // Draw the dots as circles on the canvas
             ctx.globalAlpha = dotOpacityValue;
             dots.forEach(dot => {
                 const pxX = dot.xRatio * canvas.width;
@@ -346,10 +346,7 @@
             });
             ctx.globalAlpha = 1.0;
 
-            // Convert canvas to data URL
             const dataURL = canvas.toDataURL("image/png");
-
-            // Create a temporary download link
             const downloadLink = document.createElement('a');
             downloadLink.href = dataURL;
             downloadLink.download = 'modified_car_wheels.png';
