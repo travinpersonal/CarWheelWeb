@@ -3,171 +3,285 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wheel Color Tester</title>
+    <title>Car Wheel Color Preview</title>
+    <script async src="https://docs.opencv.org/4.x/opencv.js"></script>
     <style>
-       body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(to bottom right, #e0eafc, #cfdef3);
-    color: #333;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
-    overflow: hidden;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-#app-container {
-    background-color: white;
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-    max-width: 700px;
-    width: 90%;
-    text-align: center;
-    overflow: hidden;
-}
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: #f9f6f2;
+            color: #333;
+            position: relative;
+        }
 
-/* ... (rest of the basic styles like h1, h2, p, button, #image-canvas, .input-group remain the same) */
+        h1 {
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            color: #444;
+        }
 
-/* Corrected Range Input Styles */
-input[type="range"] {
-    width: 100%;
-    height: 8px; /* Slightly thicker track */
-    border-radius: 5px;
-    background: #ddd;
-    outline: none;
-    opacity: 0.8; /* Slightly less transparent */
-    transition: opacity .2s;
-    margin: 10px 0; /* Add some margin top and bottom */
-}
+        h2 {
+            font-size: 2rem;
+            color: #444;
+            margin-bottom: 10px;
+        }
 
-input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 20px; /* Slightly larger thumb */
-    height: 20px;
-    border-radius: 50%;
-    background: #3498db;
-    cursor: pointer;
-    border: none; /* Remove default border */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Add a shadow to the thumb */
-}
+        .instructions {
+            font-size: 1rem;
+            color: #555;
+            margin-bottom: 20px;
+            text-align: center;
+        }
 
-input[type="range"]::-moz-range-thumb { /* Firefox */
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #3498db;
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
 
-input[type="range"]::-ms-thumb { /* IE/Edge */
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #3498db;
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
+        .overlay h2 {
+            margin-bottom: 15px;
+            font-size: 2rem;
+        }
 
-/* ... (rest of the styles like .custom-file-upload, #file-name-display) */
+        .overlay button {
+            background: #007BFF;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .overlay button:hover {
+            background: #0056b3;
+        }
+
+        .upload-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+            width: 100%;
+        }
+
+        label {
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        input[type="number"], input[type="color"], input[type="range"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        input[type="color"] {
+            height: 40px;
+            background: none;
+            cursor: pointer;
+        }
+
+        input[type="range"] {
+            width: 100%;
+        }
+
+        .preview-container {
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+            margin-top: 20px;
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        img, canvas {
+            width: 500px;
+            height: auto;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+        }
+
+        #preview {
+            cursor: crosshair;
+        }
+
+        .settings-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        .settings-panel {
+            display: none;
+            position: fixed;
+            top: 50px;
+            right: 20px;
+            background: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+        }
+
+        .settings-panel label {
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        button {
+            background: #007BFF;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        #undoButton {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+        }
+
     </style>
 </head>
 <body>
-    <div id="app-container">
-        <div id="welcome-screen">
-            <h1>Wheel Color Tester</h1>
-            <p>Customize the wheels of your favorite car!</p>
-            <button id="start-button">Get Started</button>
+
+    <button class="settings-icon" onclick="toggleSettings()">⚙️</button>
+    <div class="settings-panel" id="settingsPanel">
+        <label for="backgroundSlider">Background Color</label>
+        <input type="range" id="backgroundSlider" min="0" max="1" step="0.01" value="0">
+    </div>
+
+    <div class="overlay" id="instructionOverlay">
+        <h2>Welcome to the Car Wheel Color Preview Tool</h2>
+        <button onclick="goToStep(1)">Start</button>
+    </div>
+
+    <div class="upload-container" id="step1">
+        <h2>Step 1</h2>
+        <p class="instructions">Upload a side profile picture of a car.</p>
+        <input type="file" id="imageInput" accept="image/*">
+        <button id="step1NextButton" style="display: none;" onclick="goToStep(2)">Next Step</button>
+    </div>
+
+    <div class="upload-container" id="step2" style="display: none;">
+        <h2>Step 2</h2>
+        <p class="instructions">Select the center of each wheel in the image.</p>
+        <div class="preview-container">
+            <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
+                <img id="preview" alt="Original Image">
+                <button id="undoButton">Undo Last Click</button>
+            </div>
+            <canvas id="modifiedPreview"></canvas>
+        </div>
+        <button onclick="goToStep(3)">Next Step</button>
+    </div>
+
+    <div class="upload-container" id="step3" style="display: none;">
+        <h2>Step 3</h2>
+        <p class="instructions">Customize the appearance of the wheel overlays.</p>
+        <div class="preview-container">
+            <canvas id="finalPreview"></canvas>
+        </div>
+        <div class="input-group">
+            <label for="circleSize">Circle Size (radius):</label>
+            <input type="number" id="circleSize" value="30" min="1">
         </div>
 
-        <div id="step-one" style="display: none;">
-            <h2>Step 1: Upload Car Image</h2>
-            <label for="image-upload" class="custom-file-upload">Choose File</label>
-            <input type="file" id="image-upload" accept="image/*" style="display: none;">
-            <div id="file-name-display">No file chosen</div>
-            <button id="next-button-1" disabled>Next</button>
+        <div class="input-group">
+            <label for="circleColor">Circle Color:</label>
+            <input type="color" id="circleColorPicker" value="#000000">
         </div>
 
-        <div id="step-two" style="display: none;">
-            <h2>Step 2: Select Wheel Centers</h2>
-            <canvas id="click-canvas"></canvas> <button id="next-button-2" disabled>Next</button>
-        </div>
-
-        <div id="step-three" style="display: none;">
-            <h2>Step 3: Customize</h2>
-            <canvas id="output-canvas"></canvas>
-            <div class="input-group">
-                <label for="circle-color">Color:</label>
-                <input type="color" id="circle-color" value="#FF0000">
-            </div>
-            <div class="input-group">
-                <label for="circle-size">Size:</label>
-                <input type="range" id="circle-size" min="1" max="20" value="5">
-            </div>
-            <div class="input-group">
-                <label for="circle-opacity">Opacity:</label>
-                <input type="range" id="circle-opacity" min="0" max="1" step="0.1" value="1">
-            </div>
+        <div class="input-group">
+            <label for="circleOpacity">Circle Opacity:</label>
+            <input type="range" id="circleOpacity" min="0" max="1" step="0.01" value="1">
         </div>
     </div>
 
-    <script>
-        // ... (JavaScript from previous response, with the following changes)
-        const clickCanvas = document.getElementById('click-canvas');
-        const clickCtx = clickCanvas.getContext('2d');
-        const outputCanvas = document.getElementById('output-canvas');
-        const outputCtx = outputCanvas.getContext('2d');
-        // ... other variable declarations
+    <script> 
+        const backgroundSlider = document.getElementById('backgroundSlider');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const instructionOverlay = document.getElementById('instructionOverlay');
+        const steps = [
+            document.getElementById('step1'),
+            document.getElementById('step2'),
+            document.getElementById('step3')
+        ];
+        const step1NextButton = document.getElementById('step1NextButton');
+        const imageInput = document.getElementById('imageInput');
+        const preview = document.getElementById('preview');
+        const modifiedPreview = document.getElementById('modifiedPreview');
+        const finalPreview = document.getElementById('finalPreview');
 
-        imageUpload.addEventListener('change', (event) => {
-            // ... (file reading and image loading)
-            reader.onload = (e) => {
-                image.onload = () => {
-                    clickCanvas.width = image.width;
-                    clickCanvas.height = image.height;
-                    clickCtx.drawImage(image, 0, 0);
-                    outputCanvas.width = image.width;
-                    outputCanvas.height = image.height;
-                    outputCtx.drawImage(image, 0, 0);
-                };
-                image.src = e.target.result;
-                nextButton1.disabled = false;
-            };
-            // ...
-        });
+        let currentStep = 0;
+        let img = null;
+        let selectedPoints = [];
 
-        clickCanvas.addEventListener('click', (event) => {
-            // ... (click handling - same as before)
-            drawCircles(); //Call drawCircles here to update the output canvas
-        });
-
-        nextButton2.addEventListener('click', () => {
-          stepTwo.style.display = 'none';
-          stepThree.style.display = 'block';
-          drawCircles(); // Draw initial circles on step 3
-        });
-
-        function drawCircles() {
-            outputCtx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
-            outputCtx.drawImage(image, 0, 0);
-            outputCtx.fillStyle = circleColor.value;
-            outputCtx.globalAlpha = circleOpacity.value;
-            clicks.forEach(click => {
-                outputCtx.beginPath();
-                outputCtx.arc(click.x, click.y, circleSize.value, 0, 2 * Math.PI);
-                outputCtx.fill();
-            });
-            outputCtx.globalAlpha = 1;
+        function toggleSettings() {
+            settingsPanel.style.display = settingsPanel.style.display === 'block' ? 'none' : 'block';
         }
 
-        circleColor.addEventListener('input', drawCircles);
-        circleSize.addEventListener('input', drawCircles);
-        circleOpacity.addEventListener('input', drawCircles);
+        backgroundSlider.addEventListener('input', () => {
+            const value = backgroundSlider.value;
+            const gradient = `linear-gradient(to bottom, rgba(245, 245, 245, ${1 - value}), rgba(255, 165, 0, ${value}))`;
+            document.body.style.background = gradient;
+        });
 
     </script>
-</body>
-</html>
