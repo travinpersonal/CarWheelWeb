@@ -1,0 +1,22 @@
+body {
+    background-color: black;
+    color: white;
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center horizontally */
+    justify-content: center; /* Center vertically */
+    min-height: 100vh; /* Ensure full viewport height */
+    margin: 0;
+}
+
+#step-one, #step-two, #step-three {
+    background-color: gray;
+    padding: 20px;
+    border-radius: 8px;
+    display: none; /* Initially hidden */
+}
+
+#image-canvas {
+    border: 1px solid black;
+}
