@@ -1,22 +1,65 @@
 body {
-    background-color: black;
-    color: white;
     font-family: sans-serif;
+    background-color: #f4f4f4; /* Light gray background */
+    color: #333; /* Dark gray text */
     display: flex;
-    flex-direction: column;
-    align-items: center; /* Center horizontally */
-    justify-content: center; /* Center vertically */
-    min-height: 100vh; /* Ensure full viewport height */
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
     margin: 0;
 }
 
-#step-one, #step-two, #step-three {
-    background-color: gray;
-    padding: 20px;
+#container {
+    background-color: white;
+    padding: 30px;
     border-radius: 8px;
-    display: none; /* Initially hidden */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    max-width: 600px; /* Set a maximum width */
+    width: 90%; /* Occupy 90% of the viewport width */
+    text-align: center; /* Center text within the container */
+}
+
+h1, h2 {
+    color: #444; /* Slightly darker headings */
+    margin-bottom: 20px;
+}
+
+button {
+    background-color: #007bff; /* Blue button */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* Smooth transition */
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
 }
 
 #image-canvas {
-    border: 1px solid black;
+    border: 1px solid #ddd; /* Light gray border for canvas */
+    margin-top: 20px;
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+input[type="file"] {
+    margin-bottom: 20px;
+}
+
+.color-picker-container, .slider-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    justify-content: space-between;
+}
+
+.slider-container label {
+    margin-right: 10px;
 }

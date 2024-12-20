@@ -1,47 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-
-</html>
-...
-<!DOCTYPE html>
 <html>
 <head>
     <title>Wheel Color Tester</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="welcome-screen">
-        <h1>Welcome to Wheel Color Tester</h1>
-        <button id="start-button">Start</button>
-    </div>
+    <div id="container">
+        <div id="welcome-screen">
+            <h1>Wheel Color Tester</h1>
+            <button id="start-button">Get Started</button>
+        </div>
 
-    <div id="step-one" style="display: none;">
-        <h2>Step One: Upload Car Image</h2>
-        <input type="file" id="image-upload" accept="image/*">
-        <button id="next-button-1" disabled>Next</button>
-    </div>
+        <div id="step-one" style="display: none;">
+            <h2>Step 1: Upload Car Image</h2>
+            <input type="file" id="image-upload" accept="image/*">
+            <button id="next-button-1" disabled>Next</button>
+        </div>
 
-    <div id="step-two" style="display: none;">
-        <h2>Step Two: Select Wheel Centers</h2>
-        <canvas id="image-canvas"></canvas>
-        <button id="next-button-2" disabled>Next</button>
-    </div>
+        <div id="step-two" style="display: none;">
+            <h2>Step 2: Select Wheel Centers</h2>
+            <canvas id="image-canvas"></canvas>
+            <button id="next-button-2" disabled>Next</button>
+        </div>
 
-    <div id="step-three" style="display: none;">
-      <h2>Step Three: Customize</h2>
-      <label for="circle-color">Color:</label>
-      <input type="color" id="circle-color" value="#FF0000"><br>
-      <label for="circle-size">Size:</label>
-      <input type="range" id="circle-size" min="1" max="50" value="10"><br>
-      <label for="circle-opacity">Opacity:</label>
-      <input type="range" id="circle-opacity" min="0" max="1" step="0.1" value="1">
+        <div id="step-three" style="display: none;">
+            <h2>Step 3: Customize</h2>
+            <div class="color-picker-container">
+                <label for="circle-color">Color:</label>
+                <input type="color" id="circle-color" value="#FF0000">
+            </div>
+            <div class="slider-container">
+                <label for="circle-size">Size:</label>
+                <input type="range" id="circle-size" min="1" max="20" value="5">
+            </div>
+            <div class="slider-container">
+                <label for="circle-opacity">Opacity:</label>
+                <input type="range" id="circle-opacity" min="0" max="1" step="0.1" value="1">
+            </div>
+        </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
